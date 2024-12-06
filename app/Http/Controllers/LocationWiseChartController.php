@@ -43,10 +43,14 @@ class LocationWiseChartController extends Controller
         $statuslabels = Statuslabel::whereIn('id', $statuslabelIds)->withCount('assets')->get();
         $total = [];
         $colours = [];
+        $ids = []; // Array to store status IDs
+
         foreach ($statuslabels as $statuslabel) {
             $total[$statuslabel->name] = $statuslabel->assets_count;
             array_push($colours, $statuslabel->color);
+            $ids[] = $statuslabel->id; // Collect the status IDs
         }
+
         $asset_status_data = [
             'labels' => array_keys($total),
             'datasets' => [
@@ -55,26 +59,27 @@ class LocationWiseChartController extends Controller
                     'backgroundColor' => $colours,
                     'data' => array_values($total)
                 ]
-            ]
+            ],
+            'ids' => $ids // Include the status IDs
         ];
 
         $asset_category = Asset::where('location_id', $location->id)
-                                ->join('models', 'assets.model_id', '=', 'models.id') // Join assets with models table
-                                ->join('categories', 'models.category_id', '=', 'categories.id') // Join models with categories table
-                                ->select('categories.name as category_name', DB::raw('COUNT(assets.id) as count')) // Select category name and count of assets
-                                ->groupBy('categories.name') // Group by category name
-                                ->pluck('count', 'category_name') // Map count to category name
-                                ->toArray();
+                        ->join('models', 'assets.model_id', '=', 'models.id') // Join assets with models table
+                        ->join('categories', 'models.category_id', '=', 'categories.id') // Join models with categories table
+                        ->select('categories.id as category_id', 'categories.name as category_name', DB::raw('COUNT(assets.id) as count')) // Include category_id
+                        ->groupBy('categories.id', 'categories.name') // Group by category_id and category_name
+                        ->get();
 
         $asset_category_data = [
-            'labels' => array_keys($asset_category),
+            'labels' => $asset_category->pluck('category_name')->toArray(),
             'datasets' => [
                 [
                     'label' => 'Quantity',
                     'backgroundColor' => ['#1230ec', '#ec1212', '#fff00f', '#ec12e9', '#00b31e'],
-                    'data' => array_values($asset_category)
+                    'data' => $asset_category->pluck('count')->toArray(),
                 ]
-            ]
+            ],
+            'ids' => $asset_category->pluck('category_id')->toArray()
         ];
 
         $now = Carbon::now();
@@ -108,22 +113,30 @@ class LocationWiseChartController extends Controller
         ];
 
         $manufacturers = Asset::where('location_id', $location->id)
-                                ->join('models', 'assets.model_id', '=', 'models.id') // Join assets with models table
-                                ->join('manufacturers', 'models.manufacturer_id', '=', 'manufacturers.id') // Join models with manufacturers table
-                                ->select('manufacturers.name as manufacturer_name', DB::raw('COUNT(assets.id) as count')) // Select manufacturer name and count of assets
-                                ->groupBy('manufacturers.name') // Group by manufacturer name
-                                ->pluck('count', 'manufacturer_name') // Map count to manufacturer name
-                                ->toArray();
+                ->join('models', 'assets.model_id', '=', 'models.id') // Join assets with models table
+                ->join('manufacturers', 'models.manufacturer_id', '=', 'manufacturers.id') // Join models with manufacturers table
+                ->select(
+                    'manufacturers.id as manufacturer_id', 
+                    'manufacturers.name as manufacturer_name', 
+                    DB::raw('COUNT(assets.id) as count')
+                )
+                ->groupBy('manufacturers.id', 'manufacturers.name') // Group by manufacturer id and name
+                ->get();
+
+        $labels = $manufacturers->pluck('manufacturer_name')->toArray(); // Manufacturer names
+        $data = $manufacturers->pluck('count')->toArray(); // Counts
+        $ids = $manufacturers->pluck('manufacturer_id')->toArray(); // Manufacturer IDs
 
         $manufacturers_data = [
-            'labels' => array_keys($manufacturers),
+            'labels' => $labels,
             'datasets' => [
                 [
                     'label' => 'Quantity',
                     'backgroundColor' => ['#1230ec', '#ec1212', '#fff00f', '#ec12e9', '#00b31e'],
-                    'data' => array_values($manufacturers)
+                    'data' => $data
                 ]
-            ]
+            ],
+            'ids' => $ids // Include manufacturer IDs
         ];
 
         $response = [

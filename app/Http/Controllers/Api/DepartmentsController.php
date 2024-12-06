@@ -11,6 +11,10 @@ use Illuminate\Http\Request;
 use App\Http\Requests\ImageUploadRequest;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\JsonResponse;
+use App\Models\LicenseSeat;
+use App\Models\License;
+use App\Models\User;
+
 
 class DepartmentsController extends Controller
 {
@@ -197,5 +201,27 @@ class DepartmentsController extends Controller
         }
 
         return (new SelectlistTransformer)->transformSelectlist($departments);
+    }
+
+    public function departmentalSoftwareAllocation(){
+        $data = [];
+        $departments = Department::get();
+        foreach($departments as $department){
+            $users = User::where('department_id', $department->id)->get();
+            $licenseIds = LicenseSeat::whereIn('assigned_to', $users->pluck('id'))->pluck('license_id');
+            $license = License::whereIn('id', $licenseIds)->get();
+            foreach($license as $lic){
+                $licenses_assigned = LicenseSeat::where('license_id', $lic->id)->whereIn('assigned_to', $users->pluck('id'))->count();
+                $array = [
+                    'department'        => $department->name,
+                    'software'          => $lic->name,
+                    'manufacturer'      => $lic->manufacturer->name,
+                    'licenses_assigned' => $licenses_assigned,
+                    'total_cost'        => ($lic->purchase_cost * $licenses_assigned),
+                ];
+                array_push($data, $array);
+            }
+        }
+        return $data;
     }
 }

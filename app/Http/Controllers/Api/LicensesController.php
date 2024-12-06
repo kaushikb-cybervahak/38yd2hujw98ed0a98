@@ -262,7 +262,12 @@ class LicensesController extends Controller
     }
 
     public function utilisationRate(Request $request){
-        $licenses = License::with('company', 'manufacturer', 'supplier','category', 'adminuser')->withCount('freeSeats as free_seats_count')->get();
+        $licenses = License::with('company', 'manufacturer', 'supplier', 'category', 'adminuser')
+        ->withCount('freeSeats as free_seats_count')
+        ->withCount('assignedCount as assigned_seats_count')
+        ->withCount('licenseseats as total_seats')
+        ->get();
         return $licenses;
     }
+
 }

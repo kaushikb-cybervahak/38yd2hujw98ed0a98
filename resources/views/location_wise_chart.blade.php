@@ -1,7 +1,7 @@
 @extends('layouts/default')
 {{-- Page title --}}
 @section('title')
-Location wise chart 
+Location wise insights 
 @parent
 @stop
 
@@ -13,13 +13,13 @@ Location wise chart
         <select class="form-select" id="location-select">
             <option value="">Select</option>
             @foreach ($locations as $location)
-            <option value="{{$location->id}}">{{$location->name}}</option>
+            <option value="{{$location->id}}" @selected($location->id == 2)>{{$location->name}}</option>
             @endforeach
         </select>
     </div>
 </div>
 <div class="row">
-    <div class="col-md-6">
+    <div class="col-md-4">
         <div class="box box-default">
             <div class="box-header with-border">
                 <h2 class="box-title">
@@ -45,7 +45,7 @@ Location wise chart
         </div>
     </div>
 
-    <div class="col-md-6">
+    <div class="col-md-4">
         <div class="box box-default">
             <div class="box-header with-border">
                 <h2 class="box-title">
@@ -71,7 +71,7 @@ Location wise chart
         </div>
     </div>
 
-    <div class="col-md-6">
+    <div class="col-md-4">
         <div class="box box-default">
             <div class="box-header with-border">
                 <h2 class="box-title">
@@ -97,7 +97,7 @@ Location wise chart
         </div>
     </div>
 
-    <div class="col-md-6">
+    <div class="col-md-4">
         <div class="box box-default">
             <div class="box-header with-border">
                 <h2 class="box-title">
@@ -123,7 +123,7 @@ Location wise chart
         </div>
     </div>
 
-    <div class="col-md-6">
+    <div class="col-md-4">
         <div class="box box-default">
             <div class="box-header with-border">
                 <h2 class="box-title">
@@ -157,178 +157,248 @@ Location wise chart
 
 @push('js')
 <script>
-    $(document).ready(function(){
-        $('#location-select').on('change', function(){
-            let locationId =  $(this).val();
-            populateGraphs(locationId);
+  $(document).ready(function () {
+    // Store chart instances globally
+    let assetLabellingChartInstance = null;
+    let assetStatusChartInstance = null;
+    let assetCategoriesChartInstance = null;
+    let warrantyStatusChartInstance = null;
+    let manufacturersChartInstance = null;
+
+    // Initial graph population
+    populateGraphs($('#location-select').val());
+
+    // Handle location selection change
+    $('#location-select').on('change', function () {
+        let locationId = $(this).val();
+        populateGraphs(locationId);
+    });
+
+    // Fetch and render graphs
+    function populateGraphs(location) {
+        $.ajax({
+            type: "GET",
+            url: "{{ route('get.location.wise.graph') }}",
+            headers: {
+                "X-Requested-With": 'XMLHttpRequest',
+                "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr('content')
+            },
+            data: { 'location_id': location },
+            dataType: "json",
+            success: function (response) {
+                console.log(response);
+
+                // Render each chart after destroying previous instances
+                assetLabellingChartRender(response.asset_labelling_status_data);
+                assetStatusChartRender(response.asset_status_data);
+                assetCategoriesChartRender(response.asset_category_data);
+                warrantyStatusGraph(response.warranty_status_data);
+                manufacturersGraph(response.manufacturers_data);
+            }
+        });
+    }
+
+    function assetLabellingChartRender(data = []) {
+        if (assetLabellingChartInstance) {
+            assetLabellingChartInstance.destroy(); // Destroy previous instance
+        }
+        var ctx = document.getElementById("assetLabellingStatusGraph").getContext("2d");
+        assetLabellingChartInstance = new Chart(ctx, {
+            type: 'pie',
+            data: data,
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { position: 'top' },
+                    tooltip: { enabled: true }
+                }
+            }
+        });
+    }
+
+    function assetStatusChartRender(data = []) {
+        if (assetStatusChartInstance) {
+            assetStatusChartInstance.destroy();
+        }
+        var ctx = document.getElementById("assetStatusGraph").getContext("2d");
+        var chartData = {
+            labels: data.labels, // Status labels
+            datasets: [{
+                label: 'Quantity',
+                backgroundColor: data.datasets[0].backgroundColor, // Colors from backend
+                data: data.datasets[0].data, // Quantities
+            }],
+            ids: data.ids // Include `status_id` array
+        };
+
+        assetStatusChartInstance = new Chart(ctx, {
+            type: 'pie',
+            data: chartData, // Use chartData including `ids`
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { position: 'top' },
+                    tooltip: { enabled: true }
+                },
+                onClick: function (event, elements) {
+                    if (elements.length > 0) {
+                        var chartElement = elements[0];
+                        var index = chartElement._index; // Use `_index` for the clicked element
+                        var statusId = chartData.ids[index]; // Retrieve the corresponding `status_id`
+                        if (statusId) {
+                            window.location.href = `/hardware?status_id=${statusId}`; // Redirect with dynamic `status_id`
+                        } else {
+                            window.location.href = `/statuslabels?`;
+                        }
+                    }
+                }
+            }
         });
 
-        function populateGraphs(location){
-            $.ajax({
-                type: "GET",
-                url: "{{ route('get.location.wise.graph') }}",
-                headers: {
-                    "X-Requested-With": 'XMLHttpRequest',
-                    "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr('content')
-                },
-                data: {'location_id':location},
-                dataType: "json",
-                success: function (response) {
-                    console.log(response);
-                    assetLabellingChartRender(response.asset_labelling_status_data);
-                    assetStatusChartRender(response.asset_status_data);
-                    assetCategoriesChartRender(response.asset_category_data);
-                    warrantyStatusGraph(response.warranty_status_data);
-                    manufacturersGraph(response.manufacturers_data);
-                }
-            });
-        }
+    }
 
-        function assetLabellingChartRender(data = []){
-            var assetLabellingPieChart = $("#assetLabellingStatusGraph").get(0).getContext("2d");
-            var assetLabellingPieChart = new Chart(assetLabellingPieChart);
-            var assetLabellingPieChartCtx = document.getElementById("assetLabellingStatusGraph");
-            var assetLabellingPieChartOptions = {
+    function assetCategoriesChartRender(data = []) {
+        if (assetCategoriesChartInstance) {
+            assetCategoriesChartInstance.destroy();
+        }
+        var ctx = document.getElementById("assetCategoriesGraph").getContext("2d");
+        var chartData = {
+            labels: data.labels, // Labels (category names)
+            datasets: [{
+                label: 'Quantity',
+                backgroundColor: ['#1230ec', '#ec1212', '#fff00f', '#ec12e9', '#00b31e'],
+                data: data.datasets[0].data, // Counts
+            }],
+            ids: data.ids // Add `ids` here
+        };
+        assetCategoriesChartInstance = new Chart(ctx, {
+            type: 'doughnut',
+            data: chartData, // Use chartData that includes `ids`
+            options: {
                 responsive: true,
                 maintainAspectRatio: true,
                 plugins: {
-                    legend: {
-                        position: 'top',
-                    },
+                    legend: { position: 'top' },
                     tooltip: {
-                        enabled: true
+                        callbacks: {
+                            label: function (tooltipItem, data) {
+                                var dataset = data.datasets[tooltipItem.datasetIndex];
+                                var total = dataset.data.reduce((sum, value) => sum + value, 0);
+                                var value = dataset.data[tooltipItem.index];
+                                var percentage = ((value / total) * 100).toFixed(2);
+                                return `${data.labels[tooltipItem.index]}: ${value} (${percentage}%)`;
+                            }
+                        }
                     }
-                }
-            };
-            var myassetLabellingPieChart = new Chart(assetLabellingPieChartCtx,{
-                type   : 'pie',
-                data   : data,
-                options: assetLabellingPieChartOptions
-            });
-        }
-
-        function assetStatusChartRender(data = []){
-            var assetStatusPieChart = $("#assetStatusGraph").get(0).getContext("2d");
-            var assetStatusPieChart = new Chart(assetStatusPieChart);
-            var assetStatusPieChartCtx = document.getElementById("assetStatusGraph");
-            var assetStatusPieChartOptions = {
-                responsive: true,
-                maintainAspectRatio: true,
-                plugins: {
-                    legend: {
-                        position: 'top',
-                    },
-                    tooltip: {
-                        enabled: true
-                    }
-                }
-            };
-            var myassetStatusPieChart = new Chart(assetStatusPieChartCtx,{
-                type   : 'pie',
-                data   : data,
-                options: assetStatusPieChartOptions
-            });
-        }
-
-        function assetCategoriesChartRender(data = []){
-            var assetCategoriesPieChart = $("#assetCategoriesGraph").get(0).getContext("2d");
-            var assetCategoriesPieChart = new Chart(assetCategoriesPieChart);
-            var assetCategoriesPieChartCtx = document.getElementById("assetCategoriesGraph");
-            var assetCategoriesPieChartOptions = {
-                responsive: true,
-                maintainAspectRatio: true,
-                legend: {
-                    position: 'top', // Position of the legend
                 },
-                cutoutPercentage: 50, // Adjust the size of the doughnut's hole (50% default)
-                tooltips: {
-                    callbacks: {
-                        label: function (tooltipItem, data) {
-                            var dataset = data.datasets[tooltipItem.datasetIndex];
-                            var total = dataset.data.reduce((sum, value) => sum + value, 0);
-                            var value = dataset.data[tooltipItem.index];
-                            var percentage = ((value / total) * 100).toFixed(2);
-                            return `${data.labels[tooltipItem.index]}: ${value} (${percentage}%)`;
+                onClick: function (event, elements) {
+                    if (elements.length > 0) {
+                        var chartElement = elements[0];
+                        var index = chartElement._index; // Index of the clicked element
+                        var categoryId = chartData.ids[index]; // Use `chartData.ids` here
+                        console.log("Clicked index:", index, "Category ID:", categoryId); // Debugging
+                        if (categoryId) {
+                            window.location.href = `/categories/${categoryId}`; // Redirect with dynamic ID
                         }
                     }
                 }
-            };
-            var myassetCategoriesPieChart = new Chart(assetCategoriesPieChartCtx,{
-                type   : 'doughnut',
-                data   : data,
-                options: assetCategoriesPieChartOptions
-            });
-        }
+            }
+        });
 
-        function warrantyStatusGraph(data = []){
-            var warrantyStatusbarChart = $("#warrantyStatusGraph").get(0).getContext("2d");
-            var warrantyStatusbarChart = new Chart(warrantyStatusbarChart);
-            var warrantyStatusbarChartCtx = document.getElementById("warrantyStatusGraph");
-            var warrantyStatusbarChartOptions = {
+
+    }
+
+    function warrantyStatusGraph(data = []) {
+        if (warrantyStatusChartInstance) {
+            warrantyStatusChartInstance.destroy();
+        }
+        var ctx = document.getElementById("warrantyStatusGraph").getContext("2d");
+        warrantyStatusChartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: data,
+            options: {
                 responsive: true,
                 maintainAspectRatio: true,
                 scales: {
                     xAxes: [{
-                        gridLines: {
-                            display: false // Hide X-axis gridlines
-                        },
-                        barPercentage: 0.5, // Adjust bar width
+                        gridLines: { display: false },
+                        barPercentage: 0.5
                     }],
                     yAxes: [{
                         ticks: {
-                            beginAtZero: true // Start Y-axis at 0
+                            beginAtZero: true, // Ensures the Y-axis starts at 0
+                            min: 0 // Explicitly set the minimum Y-axis value to 0
                         },
-                        gridLines: {
-                            display: true // Show Y-axis gridlines
-                        }
+                        gridLines: { display: true }
                     }]
                 },
+                plugins: { legend: { position: 'top' } },
                 legend: {
-                    position: 'top', // Position of the legend
+                    display: false // Disable the legend
                 }
-            };
-            var mywarrantyStatusbarChart = new Chart(warrantyStatusbarChartCtx,{
-                type   : 'bar',
-                data   : data,
-                options: warrantyStatusbarChartOptions
-            });
-        }
+            }
+        });
+    }
 
-        function manufacturersGraph(data = []){
-            var manufacturersChart = $("#manufacturersGraph").get(0).getContext("2d");
-            var manufacturersChart = new Chart(manufacturersChart);
-            var manufacturersChartCtx = document.getElementById("manufacturersGraph");
-            var manufacturersChartOptions = {
+    function manufacturersGraph(data = []) {
+        if (manufacturersChartInstance) {
+            manufacturersChartInstance.destroy();
+        }
+        var ctx = document.getElementById("manufacturersGraph").getContext("2d");
+        var chartData = {
+            labels: data.labels, // Manufacturer names
+            datasets: [{
+                label: 'Quantity',
+                backgroundColor: data.datasets[0].backgroundColor, // Colors from backend
+                data: data.datasets[0].data, // Counts
+            }],
+            ids: data.ids // Include manufacturer IDs
+        };
+
+        manufacturersChartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: chartData, // Use chartData including `ids`
+            options: {
                 responsive: true,
                 maintainAspectRatio: true,
                 scales: {
                     xAxes: [{
-                        gridLines: {
-                            display: false // Hide X-axis gridlines
-                        },
-                        barPercentage: 0.5, // Adjust bar width
+                        gridLines: { display: false },
+                        barPercentage: 0.5
                     }],
                     yAxes: [{
                         ticks: {
-                            beginAtZero: true // Start Y-axis at 0
+                            beginAtZero: true, // Ensures the Y-axis starts at 0
+                            min: 0 // Explicitly set the minimum Y-axis value to 0
                         },
-                        gridLines: {
-                            display: true // Show Y-axis gridlines
-                        }
+                        gridLines: { display: true }
                     }]
                 },
+                plugins: { legend: { position: 'top' } },
                 legend: {
-                    position: 'top', // Position of the legend
+                    display: false // Disable the legend
+                },
+                onClick: function (event, elements) {
+                    if (elements.length > 0) {
+                        var chartElement = elements[0];
+                        var index = chartElement._index; // Use `_index` for the clicked element
+                        var manufacturerId = chartData.ids[index]; // Retrieve the corresponding `manufacturer_id`
+                        console.log("Clicked index:", index, "Manufacturer ID:", manufacturerId); // Debugging
+                        if (manufacturerId) {
+                            window.location.href = `/manufacturers/${manufacturerId}`; // Redirect with dynamic `manufacturer_id`
+                        } else {
+                            window.location.href = `/manufacturers`;
+                        }
+                    }
                 }
-            };
-            var mymanufacturersChart = new Chart(manufacturersChartCtx,{
-                type   : 'bar',
-                data   : data,
-                options: manufacturersChartOptions
-            });
-        }
-        
-    });
+            }
+        });
+
+    }
+});
+
 </script>
 
 @endpush

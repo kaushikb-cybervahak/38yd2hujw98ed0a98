@@ -1273,6 +1273,7 @@ Route::group(['prefix' => 'v1', 'middleware' => ['api', 'throttle:api']], functi
         }); // end version api routes
 
         Route::get('license-utilisation-rate', [ Api\LicensesController::class, 'utilisationRate'])->name('api.license.utilisation.rate');
+        Route::get('departmental-software-allocation', [ Api\DepartmentsController::class, 'departmentalSoftwareAllocation'])->name('api.departmental.software.allocation');
 
 
         Route::fallback(function () {

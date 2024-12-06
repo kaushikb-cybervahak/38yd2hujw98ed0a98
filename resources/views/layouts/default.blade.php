@@ -435,6 +435,12 @@ dir="{{ Helper::determineLanguageDirection() }}">
                                 </a>
                             </li>
                         @endcan
+                        <li{!! (Request::is('location*') ? ' class="active"' : '') !!}>
+                            <a href="{{ route('location.chart.index') }}">
+                                <x-icon type="location" class="fa-fw" />
+                                <span>{{ trans('Location wise chart') }}</span>
+                            </a>
+                        </li>
                         @can('index', \App\Models\Asset::class)
                             <li class="treeview{{ ((Request::is('statuslabels/*') || Request::is('hardware*')) ? ' active' : '') }}">
                                 <a href="#">
@@ -600,13 +606,6 @@ dir="{{ Helper::determineLanguageDirection() }}">
                                 </a>
                             </li>
                         @endcan
-
-                        <li{!! (Request::is('location*') ? ' class="active"' : '') !!}>
-                            <a href="{{ route('location.chart.index') }}">
-                                <x-icon type="location" class="fa-fw" />
-                                <span>{{ trans('Location wise chart') }}</span>
-                            </a>
-                        </li>
 
                         @can('view', \App\Models\Consumable::class)
                             <li{!! (Request::is('consumables*') ? ' class="active"' : '') !!}>
@@ -802,11 +801,15 @@ dir="{{ Helper::determineLanguageDirection() }}">
                                 </a>
                             </li>
                         @endcan
-
-
+                            <li>
+                                <div>
+                                    <img src="http://snipeit.test/site_logo.png" alt="site logo" style="width: 45%; margin: 0 auto; display: block; ">
+                                </div>
+                            </li>
                     </ul>
                 </section>
                 <!-- /.sidebar -->
+                
             </aside>
 
             <!-- Content Wrapper. Contains page content -->
@@ -872,8 +875,8 @@ dir="{{ Helper::determineLanguageDirection() }}">
 
                 <div class="1hidden-xs pull-left">
                     <div class="pull-left" >
-                        <a target="_blank" href="https://snipeitapp.com" rel="noopener">Snipe-IT</a> is open source software, made with <x-icon type="heart" style="color: #a94442; font-size: 10px" />
-                            <span class="sr-only">love</span> by <a href="https://twitter.com/snipeitapp" rel="noopener">@snipeitapp</a>.
+                        <!-- <a target="_blank" href="https://snipeitapp.com" rel="noopener">Snipe-IT</a> is open source software, made with <x-icon type="heart" style="color: #a94442; font-size: 10px" />
+                            <span class="sr-only">love</span> by <a href="https://twitter.com/snipeitapp" rel="noopener">@snipeitapp</a>. -->
                     </div>
                     <div class="pull-right">
                     @if ($snipeSettings->version_footer!='off')

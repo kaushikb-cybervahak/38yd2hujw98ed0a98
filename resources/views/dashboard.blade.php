@@ -282,11 +282,10 @@
             </div><!-- /.box-body -->
         </div> <!-- /.box -->
   </div>
-
 </div> <!--/row-->
+
 <div class="row">
     <div class="col-md-6">
-
 		@if ($snipeSettings->full_multiple_companies_support=='1')
 			 <!-- Companies -->	
 			<div class="box box-default">
@@ -515,38 +514,85 @@
 
                             <thead>
                             <tr>
-                                <th class="col-sm-3" data-visible="true" data-field="name" data-formatter="categoriesLinkFormatter" data-sortable="true">{{ trans('general.name') }}</th>
-                                <th class="col-sm-3" data-visible="true" data-field="category_type" data-sortable="true">
-                                    {{ trans('general.type') }}
+                                <th class="col-sm-3" data-visible="true" data-field="name" data-formatter="categoriesLinkFormatter" data-sortable="true">
+                                    {{ trans('general.name') }}
                                 </th>
-                                <th class="col-sm-1" data-visible="true" data-field="assets_count" data-sortable="true">
-                                    <x-icon type="assets" />
-                                    <span class="sr-only">{{ trans('general.asset_count') }}</span>
+                                <th class="col-sm-3" data-visible="true" data-field="manufacturer.name" data-sortable="true">
+                                    {{ trans('general.manufacturer') }}
                                 </th>
-                                <th class="col-sm-1" data-visible="true" data-field="accessories_count" data-sortable="true">
-                                    <x-icon type="licenses" />
-                                    <span class="sr-only">{{ trans('general.accessories_count') }}</span>
+                                <th class="col-sm-3" data-visible="true" data-field="total_seats" data-sortable="true">
+                                    {{ trans('License Purchased') }}
                                 </th>
-                                <th class="col-sm-1" data-visible="true" data-field="consumables_count" data-sortable="true">
-                                    <x-icon type="consumables" />
-                                    <span class="sr-only">{{ trans('general.consumables_count') }}</span>
+                                <th class="col-sm-3" data-visible="true" data-field="assigned_seats_count" data-sortable="true">
+                                    {{ trans('Used') }}
                                 </th>
-                                <th class="col-sm-1" data-visible="true" data-field="components_count" data-sortable="true">
-                                    <x-icon type="components" />
-                                    <span class="sr-only">{{ trans('general.components_count') }}</span>
+                                <th class="col-sm-3" data-visible="true" data-field="free_seats_count" data-sortable="true">
+                                    {{ trans('Available') }}
                                 </th>
-                                <th class="col-sm-1" data-visible="true" data-field="licenses_count" data-sortable="true">
-                                    <x-icon type="licenses" />
-                                    <span class="sr-only">{{ trans('general.licenses_count') }}</span>
+                                <th class="col-sm-3" data-visible="true" data-field="utilisation_rate" data-sortable="true">
+                                    {{ trans('Utilisation Rate (%)') }}
                                 </th>
+                               
+                            </thead>
+                        </table>
+                        </div>
+                    </div> <!-- /.col -->
+                </div> <!-- /.row -->
+
+            </div><!-- /.box-body -->
+        </div> <!-- /.box -->
+    </div>
+
+    <div class="col-md-6">
+        <!-- Departmental Software Allocation -->
+        <div class="box box-default">
+            <div class="box-header with-border">
+                <h2 class="box-title">Departmental Software Allocation</h2>
+                <div class="box-tools pull-right">
+                    <button type="button" class="btn btn-box-tool" data-widget="collapse">
+                        <x-icon type="minus" />
+                        <span class="sr-only">{{ trans('general.collapse') }}</span>
+                    </button>
+                </div>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="table-responsive">
+                        <table
+                            data-cookie-id-table="departmentalSoftwareAllocation"
+                            data-height="400"
+                            data-pagination="true"
+                            data-side-pagination="server"
+                            data-sort-order="desc"
+                            data-sort-field="id"
+                            id="departmentalSoftwareAllocation"
+                            class="table table-striped snipe-table"
+                            data-url="{{ route('api.departmental.software.allocation', ['sort' => 'id', 'order' => 'desc']) }}">
+
+                            <thead>
+                            <tr>
+                                <th class="col-sm-3" data-visible="true" data-field="department" data-sortable="true">
+                                    {{ trans('Department') }}
+                                </th>
+                                <th class="col-sm-3" data-visible="true" data-field="software" data-sortable="true">
+                                    {{ trans('Software') }}
+                                </th>
+                                <th class="col-sm-3" data-visible="true" data-field="manufacturer" data-sortable="true">
+                                    {{ trans('Manufacturer') }}
+                                </th>
+                                <th class="col-sm-3" data-visible="true" data-field="licenses_assigned" data-sortable="true">
+                                    {{ trans('Licenses assigned') }}
+                                </th>
+                                <th class="col-sm-3" data-visible="true" data-field="total_cost" data-sortable="true">
+                                    {{ trans('Total Cost') }}
+                                </th> 
                             </tr>
                             </thead>
                         </table>
                         </div>
                     </div> <!-- /.col -->
-                    <div class="text-center col-md-12" style="padding-top: 10px;">
-                        <a href="{{ route('categories.index') }}" class="btn btn-primary btn-sm" style="width: 100%">{{ trans('general.viewall') }}</a>
-                    </div>
                 </div> <!-- /.row -->
 
             </div><!-- /.box-body -->
@@ -571,7 +617,7 @@
                 <div class="row">
                     <div class="col-md-12">
                         <div class="chart-responsive">
-                            <canvas id="barChartView" height="260"></canvas>
+                            <canvas id="barChartView"></canvas>
                         </div> 
                     </div> 
                 </div>
@@ -597,7 +643,7 @@
                 <div class="row">
                     <div class="col-md-12">
                         <div class="chart-responsive">
-                            <canvas id="hardwareAssetAgeChart" height="260"></canvas>
+                            <canvas id="hardwareAssetAgeChart"></canvas>
                         </div> 
                     </div> 
                 </div>

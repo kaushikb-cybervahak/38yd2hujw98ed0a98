@@ -114,7 +114,11 @@ class License extends Depreciable
         'category'     => ['name'],
         'depreciation' => ['name'],
     ];
-    protected $appends = ['free_seat_count'];
+    
+    protected $appends = [
+        'free_seat_count',
+        'utilisation_rate'
+    ];
 
     /**
      * Update seat counts when the license is updated
@@ -565,6 +569,15 @@ class License extends Depreciable
             $query->whereNotNull('assigned_to')
                 ->orWhereNotNull('asset_id');
         });
+    }
+
+    public function getUtilisationRateAttribute(){
+        $assigned_seats = $this->licenseseats->count() - $this->free_seat_count;
+        if ($assigned_seats && $this->licenseseats->count()) {
+            return ($assigned_seats / $this->licenseseats->count()) * 100 .'%';
+        } else {
+            return '0%';
+        }
     }
 
     /**
