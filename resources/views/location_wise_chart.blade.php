@@ -19,7 +19,7 @@ Location wise insights
     </div>
 </div>
 <div class="row">
-    <div class="col-md-4">
+    {{-- <div class="col-md-4">
         <div class="box box-default">
             <div class="box-header with-border">
                 <h2 class="box-title">
@@ -43,7 +43,7 @@ Location wise insights
                 </div>
             </div>
         </div>
-    </div>
+    </div> --}}
 
     <div class="col-md-4">
         <div class="box box-default">
@@ -189,7 +189,7 @@ Location wise insights
                 console.log(response);
 
                 // Render each chart after destroying previous instances
-                assetLabellingChartRender(response.asset_labelling_status_data);
+                //assetLabellingChartRender(response.asset_labelling_status_data);
                 assetStatusChartRender(response.asset_status_data);
                 assetCategoriesChartRender(response.asset_category_data);
                 warrantyStatusGraph(response.warranty_status_data);
@@ -268,7 +268,7 @@ Location wise insights
             labels: data.labels, // Labels (category names)
             datasets: [{
                 label: 'Quantity',
-                backgroundColor: ['#1230ec', '#ec1212', '#fff00f', '#ec12e9', '#00b31e'],
+                backgroundColor: data.datasets[0].backgroundColor,
                 data: data.datasets[0].data, // Counts
             }],
             ids: data.ids // Add `ids` here
@@ -306,8 +306,6 @@ Location wise insights
                 }
             }
         });
-
-
     }
 
     function warrantyStatusGraph(data = []) {

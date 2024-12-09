@@ -544,7 +544,7 @@
 
     <div class="col-md-6">
         <!-- Departmental Software Allocation -->
-        <div class="box box-default">
+        <div class="box box-default" style="margin-bottom: 22px;">
             <div class="box-header with-border">
                 <h2 class="box-title">Departmental Software Allocation</h2>
                 <div class="box-tools pull-right">

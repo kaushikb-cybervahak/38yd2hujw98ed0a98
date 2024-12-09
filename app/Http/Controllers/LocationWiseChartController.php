@@ -11,6 +11,7 @@ use App\Models\Asset;
 use Carbon\Carbon;
 
 
+
 class LocationWiseChartController extends Controller
 {
     public function index(){
@@ -26,13 +27,13 @@ class LocationWiseChartController extends Controller
                                         ->pluck('count', '_snipeit_labelling_status_19')
                                         ->toArray();
 
-
+        $colours = $this->getRandomColors($asset_labelling_status);
         $asset_labelling_status_data = [
             'labels' => array_keys($asset_labelling_status),
             'datasets' => [
                 [
                     'label' => 'Quantity',
-                    'backgroundColor' => ['#ec12e9', '#c1de08', '#ec1212', '#1230ec', '#00b31e'],
+                    'backgroundColor' => $colours,
                     'data' => array_values($asset_labelling_status)
                 ]
             ]
@@ -70,12 +71,13 @@ class LocationWiseChartController extends Controller
                         ->groupBy('categories.id', 'categories.name') // Group by category_id and category_name
                         ->get();
 
+        $colours = $this->getRandomColors($asset_category);
         $asset_category_data = [
             'labels' => $asset_category->pluck('category_name')->toArray(),
             'datasets' => [
                 [
                     'label' => 'Quantity',
-                    'backgroundColor' => ['#1230ec', '#ec1212', '#fff00f', '#ec12e9', '#00b31e'],
+                    'backgroundColor' => $colours,
                     'data' => $asset_category->pluck('count')->toArray(),
                 ]
             ],
@@ -98,13 +100,13 @@ class LocationWiseChartController extends Controller
             $results->between_3_and_5_years,
             $results->more_than_5_years,
         ];
-
+        $colours = $this->getRandomColors($array);
         $warranty_status_data = [
             'labels'=> ['0-1 year', '1-3 years', '3-5 years', '5+ years'],
             'datasets'=> [
                 [
                     'label'=> 'Quantity',
-                    'backgroundColor'=> ['#ff6384', '#36a2eb', '#cc65fe', '#ffce56'],
+                    'backgroundColor'=> $colours,
                     'borderColor'=> '#ccc',
                     'borderWidth'=> 1,
                     'data'=> $array
@@ -126,13 +128,13 @@ class LocationWiseChartController extends Controller
         $labels = $manufacturers->pluck('manufacturer_name')->toArray(); // Manufacturer names
         $data = $manufacturers->pluck('count')->toArray(); // Counts
         $ids = $manufacturers->pluck('manufacturer_id')->toArray(); // Manufacturer IDs
-
+        $colours = $this->getRandomColors($manufacturers);
         $manufacturers_data = [
             'labels' => $labels,
             'datasets' => [
                 [
                     'label' => 'Quantity',
-                    'backgroundColor' => ['#1230ec', '#ec1212', '#fff00f', '#ec12e9', '#00b31e'],
+                    'backgroundColor' => $colours,
                     'data' => $data
                 ]
             ],
@@ -147,5 +149,13 @@ class LocationWiseChartController extends Controller
             'manufacturers_data' => $manufacturers_data,
         ];
         return $response;
+    }
+
+    protected function getRandomColors($dataset){
+        $colors = [];
+        foreach ($dataset as $data) {
+            $colors[] = sprintf('#%06X', mt_rand(0, 0xFFFFFF)); // Generate valid random hex colors
+        }
+        return $colors;
     }
 }
