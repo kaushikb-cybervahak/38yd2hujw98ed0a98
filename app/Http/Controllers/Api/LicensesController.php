@@ -267,7 +267,8 @@ class LicensesController extends Controller
         ->withCount('assignedCount as assigned_seats_count')
         ->withCount('licenseseats as total_seats')
         ->get();
-        return $licenses;
+        // return $licenses;
+        return (new LicensesTransformer)->transformLicenses($licenses, count($licenses));
     }
 
 }

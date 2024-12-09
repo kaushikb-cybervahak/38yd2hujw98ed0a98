@@ -21,9 +21,9 @@ class LocationWiseChartController extends Controller
     public function getLocationWiseGraph(Request $request){
         $location = Location::find($request->location_id);
         $asset_labelling_status = Asset::where('location_id', $location->id)
-                                        ->select('_snipeit_asset_labelling_status_2', DB::raw('COUNT(*) as count'))
-                                        ->groupBy('_snipeit_asset_labelling_status_2')
-                                        ->pluck('count', '_snipeit_asset_labelling_status_2')
+                                        ->select('_snipeit_labelling_status_19', DB::raw('COUNT(*) as count'))
+                                        ->groupBy('_snipeit_labelling_status_19')
+                                        ->pluck('count', '_snipeit_labelling_status_19')
                                         ->toArray();
 
 

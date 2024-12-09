@@ -803,7 +803,7 @@ dir="{{ Helper::determineLanguageDirection() }}">
                         @endcan
                             <li>
                                 <div>
-                                    <img src="http://snipeit.test/site_logo.png" alt="site logo" style="width: 45%; margin: 0 auto; display: block; ">
+                                    <img src="{{ asset('site_logo.png')}}" alt="site logo" style="width: 45%; margin: 0 auto; display: block; ">
                                 </div>
                             </li>
                     </ul>

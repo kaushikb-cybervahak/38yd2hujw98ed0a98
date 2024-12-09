@@ -514,7 +514,7 @@
 
                             <thead>
                             <tr>
-                                <th class="col-sm-3" data-visible="true" data-field="name" data-formatter="categoriesLinkFormatter" data-sortable="true">
+                                <th class="col-sm-3" data-visible="true" data-field="name" data-formatter="licensesLinkFormatter" data-sortable="true">
                                     {{ trans('general.name') }}
                                 </th>
                                 <th class="col-sm-3" data-visible="true" data-field="manufacturer.name" data-sortable="true">
@@ -532,7 +532,6 @@
                                 <th class="col-sm-3" data-visible="true" data-field="utilisation_rate" data-sortable="true">
                                     {{ trans('Utilisation Rate (%)') }}
                                 </th>
-                               
                             </thead>
                         </table>
                         </div>
